@@ -1,9 +1,9 @@
 Package: ESDKeys
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Tools for Building and Using Ecological Site Keys
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
+Author: Alexandra Heller
+Maintainer: Alexandra Heller <aheller@nmsu.edu>
 Description: ESDKeys can be used to gather ecological site information from the EDIT database 
 (https://edit.jornada.nmsu.edu/) and format it into a quantitative key, and to assess 
 monitoring data against ecological site criteria to understand probable ecological site 
