@@ -10,18 +10,18 @@ library(tidyverse)
 library(terradactyl)
 
 # Optionally, read in SiteKey if it has already been generated and saved as a csv file
-SiteKey <- read.csv("C:\\Users\\aheller\\Documents\\Analysis\\ESDKeys\\SiteKeyOutput_MLRA035X.csv")
+SiteKey <- read.csv("C:\\Users\\aheller\\Documents\\Analysis\\ESDKeysWorking\\SiteKeyOutput_MLRA035X.csv")
 
 # MLRA of interest
 mlra <- "035X"
 
 # Define arguments for function
-# How do you want to subset plots? 
+# How do you want to subset plots?
 # To select all plots within an administrative area, have a shapefile ready
 # If subsetting plots by polygon...
 keypolyset = FALSE # Set to TRUE or FALSE
 # Define path to shapefile
-shapefile <- "C:\\Users\\aheller\\Documents\\GIS\\RP GIS\\RP_DSM_boundary_dissolved_10kmbuffer_5070.shp" 
+shapefile <- "C:\\Users\\aheller\\Documents\\GIS\\RP GIS\\RP_DSM_boundary_dissolved_10kmbuffer_5070.shp"
 
 # If state...
 keystateset = TRUE # Set to TRUE or FALSE
@@ -33,7 +33,7 @@ keystate <- "NM" # Select state of interest
 # Assign weight scalars to one of three weight classes, from least (1) to greatest (3)
 # Potential variables are: average annual precipitation, percent slope, elevation,
 # soil depth, volume of soil surface gravels, volume of soil surface large fragments,
-# weighted subsurface volume of gravel, weighted subsurface volume of large fragments, 
+# weighted subsurface volume of gravel, weighted subsurface volume of large fragments,
 # particle size class (PSC), and soil surface texture
 weights = FALSE
 one <- c("AvgPrecip", "Elevation")

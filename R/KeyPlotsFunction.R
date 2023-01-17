@@ -19,9 +19,7 @@ KeyPlots <- function(source.dsn, mlra, keypolyset, keystateset, weights) {
   }
 
 
-
-
-  modplots <- dplyr::select(modplots, PrimaryKey, MLRA_Name, MLRASYM, State,
+  modplots <- dplyr::select(modplots, PrimaryKey, State,
                             AvgPrecip, AvgPrecipUOM, Elevation, ElevationType) # Keep desired variables
   # Transform UOM for precip (mm to inches) and for elevation (m to ft)
   modplots <- modplots %>%
@@ -190,7 +188,7 @@ KeyPlots <- function(source.dsn, mlra, keypolyset, keystateset, weights) {
    psc.esds <- dplyr::select(psc.esds, PrimaryKey, PSC = PSC.ESD)
 
   # Format quantitative plot data
-  quantplots <- modplots[, c(1, 4, 7, 10)]
+  quantplots <- dplyr::select(modplots, PrimaryKey, AvgPrecip, Elevation)
   quantplots <- quantplots %>%
     dplyr::left_join(depth) %>%
     dplyr::left_join(plotsurffrags) %>%
@@ -200,7 +198,7 @@ KeyPlots <- function(source.dsn, mlra, keypolyset, keystateset, weights) {
   # Format nominal plot data
   nomplots <- dplyr::left_join(psc.esds, plotsurftext)
   # Gather
-  quantplots <- tidyr::gather(quantplots, key = "Property", value = "PlotValue", 2:9)
+  quantplots <- tidyr::gather(quantplots, key = "Property", value = "PlotValue", 2:8)
   nomplots <- tidyr::gather(nomplots, key = "Property", value = "PlotValue", 2:3)
   # Filter out NAs
   quantplotsclean <- na.omit(quantplots)
