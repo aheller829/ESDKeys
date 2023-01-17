@@ -1,47 +1,35 @@
 
-KeyPlots <- function(source.dsn, mlra, keypolyset, keymlraset, keystateset, weights) {
-  
-  if(isTRUE(keypolyset) & isTRUE(keymlraset) & isTRUE(keystateset)) stop("Select a single plot subset method, set others to FALSE")
-  if(isTRUE(keypolyset) & isTRUE(keymlraset)) stop("Select a single plot subset method, set others to FALSE")
-  if(isTRUE(keypolyset) & isTRUE(keystateset)) stop("Select a single plot subset method, set others to FALSE")
-  if(isTRUE(keymlraset) & isTRUE(keystateset)) stop("Select a single plot subset method, set others to FALSE")
-  
-  
+KeyPlots <- function(source.dsn, mlra, keypolyset, keystateset, weights) {
+
+  if(isTRUE(keypolyset) & isTRUE(keystateset)) stop("Select a single plot subset method, set other to FALSE")
+
 # Add option for, if site key hasn't been read in from csv, build site key
-  
+
   # Read in plot info
   plots <- sf::st_read(dsn = source.dsn, layer = "tblPlots")
-  
-  # Set up mlrar for pulling from LDC
-  mlrar <- substr(keymlra, 2, 3)
-  
 
-  if(isTRUE(keypolyset) & isFALSE(keystateset) & isFALSE(keymlraset)) {
+  if(isTRUE(keypolyset) & isFALSE(keystateset)) {
     shapefile <- sf::st_read(shapefile)
     plots <- sf::st_transform(plots, sf::st_crs(shapefile)) # Check and reproject study area
     modplots <- sf::st_intersection(shapefile, plots) # Clip plots to shapefile
   } else {
-      if(isTRUE(keystateset) & isFALSE(keypolyset) & isFALSE(keymlraset)) {
+      if(isTRUE(keystateset) & isFALSE(keypolyset)) {
         modplots <- subset(plots, plots$State %in% keystate) # Subset by state name
-      } else {
-        if(isTRUE(keymlraset) & isFALSE(keypolyset) & isFALSE(keystateset)) {
-          geoIndicators <- terradactyl::fetch_api("api", "geoIndicators") # Subset by MLRA
-          mlrasimple <- stringr::str_sub(mlra, 2, -2)
-          moi <- dplyr::filter(geoIndicators, mlrarsym == mlrasimple)
-          modplots <- subset(plots, plots$PrimaryKey %in% moi$PrimaryKey)
-          }
       }
   }
 
-  modplots <- dplyr::select(modplots, PrimaryKey, MLRA_Name, MLRASYM, State, 
+
+
+
+  modplots <- dplyr::select(modplots, PrimaryKey, MLRA_Name, MLRASYM, State,
                             AvgPrecip, AvgPrecipUOM, Elevation, ElevationType) # Keep desired variables
   # Transform UOM for precip (mm to inches) and for elevation (m to ft)
   modplots <- modplots %>%
-    dplyr::mutate(AvgPrecip = ifelse(AvgPrecipUOM == "mm", AvgPrecip/25.4, AvgPrecip)) %>% 
+    dplyr::mutate(AvgPrecip = ifelse(AvgPrecipUOM == "mm", AvgPrecip/25.4, AvgPrecip)) %>%
     dplyr::mutate(Elevation = ifelse(ElevationType == 1, Elevation*3.281, Elevation))
   # Remove geometry
   modplots$SHAPE <- NULL
-  
+
   # Read in soils
   soil <- terradactyl::gather_soil_horizon(source.dsn, source = "TerrADat")
   soilmod <- subset(soil, soil$PrimaryKey %in% modplots$PrimaryKey)
@@ -110,7 +98,7 @@ KeyPlots <- function(source.dsn, mlra, keypolyset, keymlraset, keystateset, weig
     dplyr::group_by(PrimaryKey) %>%
     dplyr::mutate(SubsurfGravel = sum(ssgrmult)/SoilDepth) %>%
     dplyr::select(PrimaryKey, SubsurfGravel)
-  plotssgr <- dplyr::distinct(plotssgr) 
+  plotssgr <- dplyr::distinct(plotssgr)
   plotssgr[2] <- round(plotssgr[2], 0)
   plotssgr <- dplyr::mutate_if(plotssgr, is.numeric, ~replace(., is.na(.), 0))
   # Now larger fragments
@@ -132,11 +120,11 @@ KeyPlots <- function(source.dsn, mlra, keypolyset, keymlraset, keystateset, weig
                                   ifelse(Texture=="LCOS" | Texture=="LFS" | Texture=="LS" | Texture=="LVFS" & ClayPct > 9 & ClayPct < 16, "Yes",
                                          ifelse(Texture=="COSL" | Texture=="FSL" | Texture=="SL" | Texture=="VFSL" & ClayPct > 14 & ClayPct < 21, "Yes",
                                                 ifelse(Texture=="SCL" & ClayPct > 19 & ClayPct < 36, "Yes",
-                                                       ifelse(Texture=="SC" & ClayPct > 34 & ClayPct < 56, "Yes",  
+                                                       ifelse(Texture=="SC" & ClayPct > 34 & ClayPct < 56, "Yes",
                                                               ifelse(Texture=="L" & ClayPct > 6 & ClayPct < 29, "Yes",
                                                                      ifelse(Texture=="CL" | Texture=="SICL" & ClayPct > 26 & ClayPct < 41, "Yes",
                                                                             ifelse(Texture=="SIL" & ClayPct < 29, "Yes",
-                                                                                   ifelse(Texture=="C" & ClayPct > 39 & ClayPct < 101, "Yes", 
+                                                                                   ifelse(Texture=="C" & ClayPct > 39 & ClayPct < 101, "Yes",
                                                                                           ifelse(Texture=="SI" & ClayPct < 13, "Yes",
                                                                                                  ifelse(Texture=="SIC" & ClayPct > 39 & ClayPct < 61, "Yes", "No"))))))))))))
  # Replace incorrect ClayPct with NA
@@ -180,7 +168,7 @@ KeyPlots <- function(source.dsn, mlra, keypolyset, keymlraset, keystateset, weig
     dplyr::group_by(PrimaryKey) %>%
     dplyr::mutate(ClaySum = sum(ClayMult),
                   SandSum = sum(SandMult),
-                  FragSum = sum(FragMult)) 
+                  FragSum = sum(FragMult))
   particlepct <- particlepct %>%
     dplyr::mutate(WeightedClay = ClaySum/SoilDepth,
                   WeightedSand = SandSum/SoilDepth,
@@ -208,7 +196,7 @@ KeyPlots <- function(source.dsn, mlra, keypolyset, keymlraset, keystateset, weig
     dplyr::left_join(plotsurffrags) %>%
     dplyr::left_join(plotssgr) %>%
     dplyr::left_join(plotsslg)
-  
+
   # Format nominal plot data
   nomplots <- dplyr::left_join(psc.esds, plotsurftext)
   # Gather
@@ -223,7 +211,7 @@ KeyPlots <- function(source.dsn, mlra, keypolyset, keymlraset, keystateset, weig
   # Run quantkeying
   QSiteKey <- dplyr::filter(SiteKey, Property != "SurfaceTextures" & Property != "PSC")
   quantjoined <- dplyr::full_join(quantplotsclean, SiteKey) # Many NAs form during this step
-  # Not sure why...the quantplotsclean columns are occupied, but they don't join with the key table 
+  # Not sure why...the quantplotsclean columns are occupied, but they don't join with the key table
   # Pull unique values from Key (the upper and lower limits that define key logic)
   uppervals <- unique(quantjoined$representativeLow)
   lowervals <- unique(quantjoined$representativeHigh)
@@ -247,13 +235,13 @@ KeyPlots <- function(source.dsn, mlra, keypolyset, keymlraset, keystateset, weig
                                               }))
                                  })
   QKey_Conditional_Paste$benchmark_vector <- Qkey_benchmark_vector
-  
+
   # This summary will rank the likelihood of a plot belonging to a certain state based on proportion of criteria met
   # This is where we want to incorporate fuzzy sets
-  QSummary2 <- QKey_Conditional_Paste %>% 
-    dplyr::group_by(PrimaryKey, siteid) %>% 
-    dplyr::summarize(ProportionCriteriaMet = sum(benchmark_vector)/length(benchmark_vector)) 
-  
+  QSummary2 <- QKey_Conditional_Paste %>%
+    dplyr::group_by(PrimaryKey, siteid) %>%
+    dplyr::summarize(ProportionCriteriaMet = sum(benchmark_vector)/length(benchmark_vector))
+
   # Incorporate nominal key results for more criteria (though we actually want this to be before
   # QSummary2 so it can be included)
   NomSiteKey <- SiteKey %>%
@@ -266,15 +254,15 @@ KeyPlots <- function(source.dsn, mlra, keypolyset, keymlraset, keystateset, weig
                          FUN = function(X, strings){
                            current_row <- X
                            current_string1 <- current_row[["PlotValue"]]
-                           
+
                            st_matches <- sapply(X = strings$representativeLow,
                                                 current_string1 = current_string1,
-                                                
+
                                                 FUN = function(X, current_string1) {
-                                                  
+
                                                   current_string1 <- trimws(unlist(current_string1))
                                                   stringies <- trimws(unlist(stringr::str_split(X, pattern = ",")))
-                                                  
+
                                                   any(current_string1 %in% stringies)
                                                 })
                            data.frame(PrimaryKey = current_row[["PrimaryKey"]],
@@ -292,14 +280,14 @@ KeyPlots <- function(source.dsn, mlra, keypolyset, keymlraset, keystateset, weig
                                       benchmark_vector = st_matches,
                                       stringsAsFactors = FALSE)
                          })
-  
-  
+
+
   results <- do.call(rbind,
                         match_list)
-  
+
   # Filter for mismatches between Property and PropertyLow
   results <- dplyr::filter(results, Property == PropertyLow)
-  
+
   # Join results of quantitative and nominal keys
   Key_Conditional_Paste <- rbind(QKey_Conditional_Paste, results)
 
@@ -323,29 +311,29 @@ KeyPlots <- function(source.dsn, mlra, keypolyset, keymlraset, keystateset, weig
   QSummary <- Key_Conditional_Paste %>%
         dplyr::group_by(PrimaryKey, siteid) %>%
         dplyr::summarize(ProportionCriteriaMet = sum(benchmark_vector_int)/length(benchmark_vector_int)) %>%
-        dplyr::ungroup() 
+        dplyr::ungroup()
     }
   }
-  
+
   # A ranking of the most likely sites
   # This is sort of the final output
   Summary_Rank_Top_Slice <- QSummary %>%
     dplyr::group_by(PrimaryKey) %>%
-    dplyr::slice(which.max(ProportionCriteriaMet)) 
+    dplyr::slice(which.max(ProportionCriteriaMet))
   # Keep distinct
   Summary_Rank_Top_Slice <- dplyr::distinct(Summary_Rank_Top_Slice)
-  
+
   # What criteria were met for each best match of plot and site?
   CriteriaSummary <- Summary_Rank_Top_Slice %>%
     dplyr::left_join(Key_Conditional_Paste) %>%
     dplyr::select(PrimaryKey, siteid, ProportionCriteriaMet, Property, PlotValue,
                   Eval_Lower, Eval_Upper, benchmark_vector)
-  
+
   # Write outputs to csvs
   write.csv(CriteriaSummary, paste(Sys.Date(), "SiteKeyCriteriaSummary_MLRA", mlra, ".csv", sep = ""), row.names = FALSE)
 
   write.csv(SiteKey, paste(Sys.Date(), "SiteKeyOutput_MLRA", mlra, ".csv", sep = ""), row.names = FALSE)
-  
+
   return(Summary_Rank_Top_Slice)
 }
 
