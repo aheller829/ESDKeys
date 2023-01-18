@@ -1,19 +1,10 @@
 Package: ESDKeys
-
 Type: Package
-
 Title: Tools for Building and Using Ecological Site Keys
-
 Version: 0.1.0
-
 Author: Alexandra Heller
-
 Maintainer: Alexandra Heller <aheller@nmsu.edu>
-
 Description: ESDKeys pulls from the EDIT database to generate ecological site keys, and gathers and tabulates monitoring data to be compared against ecological site criteria.
-
 License: GPL-3
-
 Encoding: UTF-8
-
 LazyData: true
