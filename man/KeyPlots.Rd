@@ -10,19 +10,26 @@
 \usage{
 KeyPlots(
   source.dsn = NULL
-  mlra = NULL
+  mlra = NULL,
+  sitekey = NULL,
   keypolyset = FALSE,
+  shapefile = NULL,
   keystateset = TRUE,
+  keystate = NULL,
   weights = FALSE
 )
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{source.dsn}{Character string. The filepath and filename to a TerrADat geodatabase
+  \item{source.dsn}{Character string. The filepath and filename to a TerrADat geodatabase.
+}
+  \item{mlra}{Character string. Specifies the MLRA of the site key used. Use the MLRA symbol convention of "0MLRAX".
 }
   \item{sitekey}{Character string. The name of the ecological site key in the environment created by KeyBuild(). If SiteKeyBuild() has just been named, this will be SiteKey.
 }
   \item{keypolyset}{True/False. If FALSE, monitoring data will be subset by state only.
+}
+  \item{shapefile}{Character string. The filepath and filename to a shapefile, if using.
 }
   \item{keystateset}{True/False. If TRUE, monitoring data will be subset by state. If FALSE, a polygon must be provided to subset monitoring data.
 }
@@ -60,9 +67,10 @@ Two outputs are produced: 1) a .csv of monitoring plots, the ecological site for
 \examples{
 KeyPlots(
   source.dsn = "Path/To/TerrADat.gdb",
+  mlra = "036X",
   sitekey = "SiteKey",
   keypolyset = TRUE,
-  shapefile = "Path/To/Shapefile.shp"
+  shapefile = "Path/To/Shapefile.shp",
   keystateset = TRUE,
   keystate = "NM"
   weights = FALSE
