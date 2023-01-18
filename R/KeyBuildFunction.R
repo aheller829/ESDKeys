@@ -507,7 +507,7 @@ SiteKeyBuild <- function(mlra, stateset, state) {
     keytable <- dplyr::arrange(keytable, siteid, Property)
 
 
-  return(keytable)
+  return(data.frame(keytable))
 
 }
 
