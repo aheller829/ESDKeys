@@ -1,16 +1,16 @@
-\name{KeyBuild}
-\alias{KeyBuild}
+\name{SiteKeyBuild}
+\alias{SiteKeyBuild}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Build Ecological Site Keys
 %%  ~~function to do ... ~~
 }
 \description{
-Build an ecological site key for an MLRA, with an option to limit ecological sites by a geographic state. KeyBuild() produces a table listing abiotic criteria for every ecological site publically available in the EDIT database for the MLRA specified, limited by state if desired. Table columns include ecological site ID, property, and representative low and high values for each property. In the case of certain qualitative properties that are categorical rather than ordinal, a list of strings pulled from the ecological site description occupies the representative low column with NA values in the representative high column. Missing data will be skipped. Relational statements are used to create property ranges from representative lows and highs. The abiotic criteria include ecological site attributes that are useful for building a field-based ecological site key and for matching monitoring plot data to ecological sites.
+Build an ecological site key for an MLRA, with an option to limit ecological sites by a geographic state. SiteKeyBuild() produces a table listing abiotic criteria for every ecological site publically available in the EDIT database for the MLRA specified, limited by state if desired. Table columns include ecological site ID, property, and representative low and high values for each property. In the case of certain qualitative properties that are categorical rather than ordinal, a list of strings pulled from the ecological site description occupies the representative low column with NA values in the representative high column. Missing data will be skipped. Relational statements are used to create property ranges from representative lows and highs. The abiotic criteria include ecological site attributes that are useful for building a field-based ecological site key and for matching monitoring plot data to ecological sites.
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-KeyBuild(
+SiteKeyBuild(
  mlra = NULL,
  stateset = FALSE
  state = NULL
@@ -53,7 +53,7 @@ A dataframe of ecological site properties with relational statements.
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-KeyBuild(
+SiteKeyBuild(
 mlra = "036X",
 stateset = TRUE,
 state = "NM"
