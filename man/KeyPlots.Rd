@@ -26,6 +26,8 @@ KeyPlots(
 }
   \item{keystateset}{True/False. If TRUE, monitoring data will be subset by state. If FALSE, a polygon must be provided to subset monitoring data.
 }
+  \item{keystate}{Character string. If keystateset = TRUE, list state of interest using conventional two-letter state abbreviation.
+}
   \item{weights}{True/False. If FALSE, all criteria are weighted equally. If TRUE, weight scalars will be used when considering proportion of criteria met and criteria must be assigned to weight classes one, two, and three.
 }
 }

@@ -1,6 +1,6 @@
 
 KeyPlots <- function(source.dsn, sitekey, keypolyset, shapefile,
-                     keystateset, weights) {
+                     keystateset, state, weights) {
 
   if(isTRUE(keypolyset) & isTRUE(keystateset)) stop("Select a single plot subset method, set other to FALSE")
 
