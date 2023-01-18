@@ -1,9 +1,9 @@
 
-SiteKeyBuild <- function(mlra, stateset) {
-  
+SiteKeyBuild <- function(mlra, stateset, state) {
+
   # Build the base web services URL needed to retrieve the ecological site list
   classlist <- jsonlite::fromJSON(paste0("https://edit.jornada.nmsu.edu/services/downloads/esd/", mlra, "/class-list.json"))
-  
+
   # Specify a state within MLRA by last two of site code, if stateset = TRUE
   if(stateset == TRUE) {
     # Read the ecological site list into a data table, skipping the the first two lines, which contain metadata
@@ -14,17 +14,17 @@ SiteKeyBuild <- function(mlra, stateset) {
       # Read the ecological site list into a data table, skipping the the first two lines, which contain metadata
       ecoclasses <- as.data.frame(classlist$ecoclasses)}
   }
-  
+
   # Loop through ecological site list for MLRA and state to pull data of interest
   base.url <- paste0("https://edit.jornada.nmsu.edu/services/descriptions/esd/", mlra)
-  
+
   # Make a list of all the data frames for the ecoclasses IDs
   doc.url.list <- lapply(X = ecoclasses$id, FUN = function(X) {
     jsonlite::fromJSON(paste0(base.url, "/", X, ".json"))
   })
   # Name all the indices of that list for easy retrieval
   names(doc.url.list) <- ecoclasses$id
-  
+
 
   # Extract nominal key features
   # Landforms
@@ -41,9 +41,9 @@ SiteKeyBuild <- function(mlra, stateset) {
       landformlist$siteid <- ecoclass.id
       rownames(landformlist) <- NULL
       landforms <- rbind(landforms, landformlist)}}
-  
-  
-  # Surface textures 
+
+
+  # Surface textures
   surfacetextures <- data.frame(NULL)
   for(ecoclass.id in ecoclasses$id) {
     doc.url <- doc.url.list[[ecoclass.id]]
@@ -67,35 +67,35 @@ SiteKeyBuild <- function(mlra, stateset) {
         dplyr::mutate_all(funs(stringr::str_replace(., "extremely", "X"))) %>%
         dplyr::mutate_all(funs(stringr::str_replace(., "fine", ""))) %>%
         dplyr::mutate_all(funs(stringr::str_replace(., "medium", ""))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., " ", ""))) 
+        dplyr::mutate_all(funs(stringr::str_replace(., " ", "")))
       textures <- dplyr::select(surfacetextlist, starts_with("text"))
       textures <- data.frame(lapply(textures, as.character), stringsAsFactors = FALSE)
       textures <- textures %>%
         dplyr::mutate_all(na_if, "") %>%
         dplyr::mutate_all(.funs = tolower) %>%
         dplyr::mutate_all(funs(stringr::str_replace(., "coarse sand", "COS"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "very fine sandy loam", "VFSL"))) %>% 
-        dplyr::mutate_all(funs(stringr::str_replace(., "fine sandy loam", "FSL"))) %>% 
-        dplyr::mutate_all(funs(stringr::str_replace(., "sandy loam", "SL"))) %>% 
+        dplyr::mutate_all(funs(stringr::str_replace(., "very fine sandy loam", "VFSL"))) %>%
+        dplyr::mutate_all(funs(stringr::str_replace(., "fine sandy loam", "FSL"))) %>%
+        dplyr::mutate_all(funs(stringr::str_replace(., "sandy loam", "SL"))) %>%
         dplyr::mutate_all(funs(stringr::str_replace(., "fine sand", "FS"))) %>%
         dplyr::mutate_all(funs(stringr::str_replace(., "very fine sand", "VFS"))) %>%
         dplyr::mutate_all(funs(stringr::str_replace(., "loamy coarse sand", "LCOS"))) %>%
         dplyr::mutate_all(funs(stringr::str_replace(., "loamy sand", "LS"))) %>%
         dplyr::mutate_all(funs(stringr::str_replace(., "loamy fine sand", "LFS"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "loamy very fine sand", "LVFS"))) %>%                                                                                        
-        dplyr::mutate_all(funs(stringr::str_replace(., "coarse sandy loam", "COSL"))) %>% 
-        dplyr::mutate_all(funs(stringr::str_replace(., "loamy", "L"))) %>% 
-        dplyr::mutate_all(funs(stringr::str_replace(., "silt loam", "SIL"))) %>% 
-        dplyr::mutate_all(funs(stringr::str_replace(., "sandy clay loam", "SCL"))) %>% 
-        dplyr::mutate_all(funs(stringr::str_replace(., "silty clay loam", "SICL"))) %>% 
-        dplyr::mutate_all(funs(stringr::str_replace(., "clay loam", "CL"))) %>% 
+        dplyr::mutate_all(funs(stringr::str_replace(., "loamy very fine sand", "LVFS"))) %>%
+        dplyr::mutate_all(funs(stringr::str_replace(., "coarse sandy loam", "COSL"))) %>%
+        dplyr::mutate_all(funs(stringr::str_replace(., "loamy", "L"))) %>%
+        dplyr::mutate_all(funs(stringr::str_replace(., "silt loam", "SIL"))) %>%
+        dplyr::mutate_all(funs(stringr::str_replace(., "sandy clay loam", "SCL"))) %>%
+        dplyr::mutate_all(funs(stringr::str_replace(., "silty clay loam", "SICL"))) %>%
+        dplyr::mutate_all(funs(stringr::str_replace(., "clay loam", "CL"))) %>%
         dplyr::mutate_all(funs(stringr::str_replace(., "sandy clay", "SC"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "sandy clay", "SC"))) %>% 
-        dplyr::mutate_all(funs(stringr::str_replace(., "silty clay", "SIC"))) %>% 
+        dplyr::mutate_all(funs(stringr::str_replace(., "sandy clay", "SC"))) %>%
+        dplyr::mutate_all(funs(stringr::str_replace(., "silty clay", "SIC"))) %>%
         dplyr::mutate_all(funs(stringr::str_replace(., "clay", "C"))) %>%
         dplyr::mutate_all(funs(stringr::str_replace(., "sand", "S"))) %>%
         dplyr::mutate_all(funs(stringr::str_replace(., "loam", "L"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "silt", "SI"))) %>% 
+        dplyr::mutate_all(funs(stringr::str_replace(., "silt", "SI"))) %>%
         dplyr::mutate_all(funs(stringr::str_replace(., " ", "")))
       surfacetextlist <- cbind(textures, modifiers)
       surfacetextlist <- dplyr::mutate(surfacetextlist, comb1 = ifelse(!is.na(modifier1), paste(modifier1, texture), texture))
@@ -111,9 +111,9 @@ SiteKeyBuild <- function(mlra, stateset) {
       surfacetextlist$siteid <- ecoclass.id
       surfacetextures <- rbind(surfacetextures, surfacetextlist)}
   }
-  
-  
-  
+
+
+
   # Family particle size class
   # Currently if a site doesn't have a PSC listed, that site is missing from final df
   psc <- data.frame(NULL)
@@ -128,12 +128,12 @@ SiteKeyBuild <- function(mlra, stateset) {
       psclist <- dplyr::select(psclist, String = 1, Property = 3, siteid = 2)
       psc <- rbind(psc, psclist) }
   }
-  
-  
+
+
   # Species list
   spcomp <- read.table(paste0("https://edit.jornada.nmsu.edu/services/downloads/esd/", mlra, "/rangeland-plant-composition.txt"), quote = "\"", fill = TRUE, sep="\t", skip = 2, header = TRUE)
   spcomp <- subset(spcomp, spcomp$Ecological.site.ID %in% ecoclasses$id)
-  spcomp <- dplyr::select(spcomp, siteid = Ecological.site.ID, Ecosystem.state, 
+  spcomp <- dplyr::select(spcomp, siteid = Ecological.site.ID, Ecosystem.state,
                           Plant.symbol)
   spcomp <- spcomp %>%
     dplyr::filter(Ecosystem.state == 1) %>%
@@ -141,27 +141,27 @@ SiteKeyBuild <- function(mlra, stateset) {
     dplyr::group_by(siteid) %>%
     dplyr::mutate(ID = row_number()) %>%
     dplyr::ungroup()
-  
+
   spcomp <- tidyr::spread(spcomp, ID, Plant.symbol, fill = NA)
   spcomp <- tidyr::unite(spcomp, String, 2:ncol(spcomp), sep = ",", remove = TRUE, na.rm = TRUE)
   spcomp$Property <- "Species"
   spcomp <- dplyr::select(spcomp, String, Property, siteid)
-  
-  
-  
-  
+
+
+
+
   # Rbind into table
   nominaltable <- rbind(landforms, surfacetextures, psc, spcomp)
   # Reorder table for readability
   nominaltable <- dplyr::select(nominaltable, siteid, Property, String)
   # Sort table by siteid
   nominaltable <- dplyr::arrange(nominaltable, siteid, Property)
-  
 
-  
-  
-  
-  # Build quantitative key 
+
+
+
+
+  # Build quantitative key
   # Quantitative key features
   # Slope/elevation
   physio <- data.frame(NULL)
@@ -182,8 +182,8 @@ SiteKeyBuild <- function(mlra, stateset) {
       physio$representativeLow <- as.numeric(physio$representativeLow)
       physio$representativeHigh <- as.numeric(physio$representativeHigh)}
   }
-  
-  
+
+
   # Flooding frequency
   flooding <- data.frame(NULL)
   for(ecoclass.id in ecoclasses$id) {
@@ -192,7 +192,7 @@ SiteKeyBuild <- function(mlra, stateset) {
     if(nrow(fflist) == 0) {
       next
     } else {
-      fflist <- dplyr::filter(fflist, property == "Flooding frequency" | 
+      fflist <- dplyr::filter(fflist, property == "Flooding frequency" |
                                 property == "Ponding frequency")
       fflist$Low <- "Low"
       fflist$High <- "High"
@@ -204,16 +204,16 @@ SiteKeyBuild <- function(mlra, stateset) {
       fflist$siteid <- ecoclass.id
       flooding <- rbind(flooding, fflist)}
   }
-  
 
 
-  
-  
+
+
+
   # Extracting avg precip low and high from climate narrative
   # Not sure how this would work in an MLRA where this info might be missing
   climate <- data.frame(NULL)
   for(ecoclass.id in ecoclasses$id) {
-    doc.url <- doc.url.list[[ecoclass.id]] 
+    doc.url <- doc.url.list[[ecoclass.id]]
     precip <- unlist(doc.url$climaticFeatures$narratives$climaticFeatures)
     s <- unlist(stringi::stri_split(precip, regex = "(?<=[.])\\s"))
     q <- stringi::stri_detect(s, fixed = "annual precipitation")
@@ -237,11 +237,11 @@ SiteKeyBuild <- function(mlra, stateset) {
         climate$representativeLow <- as.numeric(climate$representativeLow)
         climate$representativeHigh <- as.numeric(climate$representativeHigh)}
     }}
-    
+
     # Soil depth
     soildepth <- data.frame(NULL)
     for(ecoclass.id in ecoclasses$id) {
-      doc.url <- doc.url.list[[ecoclass.id]] 
+      doc.url <- doc.url.list[[ecoclass.id]]
       depthlist <- data.frame(doc.url$soilFeatures$intervalProperties)
       if(nrow(depthlist) == 0) {
         next
@@ -259,7 +259,7 @@ SiteKeyBuild <- function(mlra, stateset) {
           soildepth$representativeLow <- as.numeric(soildepth$representativeLow)
           soildepth$representativeHigh <- as.numeric(soildepth$representativeHigh)}}
     }
-    
+
     # Surface Fragments
     surffrags <- data.frame(NULL)
     for(ecoclass.id in ecoclasses$id) {
@@ -289,8 +289,8 @@ SiteKeyBuild <- function(mlra, stateset) {
             surffrags$representativeLow <- as.numeric(surffrags$representativeLow)
             surffrags$representativeHigh <- as.numeric(surffrags$representativeHigh)}
         }}}
-    
-    
+
+
     # Subsurface fragments
     subsurffrags <- data.frame(NULL)
     for(ecoclass.id in ecoclasses$id) {
@@ -320,10 +320,10 @@ SiteKeyBuild <- function(mlra, stateset) {
             subsurffrags$representativeLow <- as.numeric(subsurffrags$representativeLow)
             subsurffrags$representativeHigh <- as.numeric(subsurffrags$representativeHigh)}
         }}}
-    
-    
-    
-    # Run-in 
+
+
+
+    # Run-in
     drainclass <- data.frame(NULL)
     for(ecoclass.id in ecoclasses$id) {
       doc.url <- doc.url.list[[ecoclass.id]]
@@ -339,7 +339,7 @@ SiteKeyBuild <- function(mlra, stateset) {
                                 representativeHigh, siteid)
         drainclass <- rbind(drainclass, dclist) }
     }
-    
+
     # Permeability
     permclass <- data.frame(NULL)
     for(ecoclass.id in ecoclasses$id) {
@@ -356,8 +356,8 @@ SiteKeyBuild <- function(mlra, stateset) {
                                 representativeHigh, siteid)
         permclass <- rbind(permclass, permlist) }
     }
-    
-    
+
+
     # Electrical conductivity
     eleccond <- data.frame(NULL)
     for(ecoclass.id in ecoclasses$id) {
@@ -378,7 +378,7 @@ SiteKeyBuild <- function(mlra, stateset) {
                                   representativeHigh, siteid)
         eleccond <- rbind(eleccond, eclist) }}
     }
-    
+
     # Soil pH
     ph <- data.frame(NULL)
     for(ecoclass.id in ecoclasses$id) {
@@ -399,8 +399,8 @@ SiteKeyBuild <- function(mlra, stateset) {
                                 representativeHigh, siteid)
         ph <- rbind(ph, phlist) }}
     }
-    
-    # CC 
+
+    # CC
     cc <- data.frame(NULL)
     for(ecoclass.id in ecoclasses$id) {
       doc.url <- doc.url.list[[ecoclass.id]]
@@ -420,9 +420,9 @@ SiteKeyBuild <- function(mlra, stateset) {
                                   representativeHigh, siteid)
           cc <- rbind(cc, cclist) }}
     }
-    
-    
-    
+
+
+
     # AWC
     awc <- data.frame(NULL)
     for(ecoclass.id in ecoclasses$id) {
@@ -443,7 +443,7 @@ SiteKeyBuild <- function(mlra, stateset) {
                                   representativeHigh, siteid)
           awc <- rbind(awc, awclist) }}
     }
-    
+
     # SAR
     sar <- data.frame(NULL)
     for(ecoclass.id in ecoclasses$id) {
@@ -464,14 +464,14 @@ SiteKeyBuild <- function(mlra, stateset) {
                                    representativeHigh, siteid)
           sar <- rbind(sar, sarlist) }}
     }
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
     # Join quantitative site properties into key table
     quantkeytable <- rbind(physio, climate, soildepth, surffrags, subsurffrags, awc,
                            cc, drainclass, eleccond, permclass, ph, sar, flooding)
@@ -486,26 +486,26 @@ SiteKeyBuild <- function(mlra, stateset) {
     quantkeytable <- dplyr::select(quantkeytable, siteid, PropertyLow, Lower.Relation,
                                    representativeLow, PropertyHigh, Upper.Relation,
                                    representativeHigh, Property)
-    
-    # Format nominal table to join 
+
+    # Format nominal table to join
     nominaltable$PropertyHigh <- nominaltable$Property
     nominaltable$PropertyLow <- nominaltable$Property
     nominaltable$representativeHigh <- NA
     nominaltable$Lower.Relation <- "=="
     nominaltable$Upper.Relation <- NA
     nominaltable <- dplyr::select(nominaltable, siteid, PropertyLow, Lower.Relation,
-                                  representativeLow = String, PropertyHigh, 
+                                  representativeLow = String, PropertyHigh,
                                   Upper.Relation, representativeHigh, Property)
-    
-    
+
+
     # Join nominal and quantitative tables
     keytable <- rbind(quantkeytable, nominaltable)
-    
+
     # Sort by ecological site
     keytable <- dplyr::arrange(keytable, siteid, Property)
-  
-  
+
+
   return(keytable)
-  
-} 
+
+}
 
