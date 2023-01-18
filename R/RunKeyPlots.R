@@ -10,7 +10,7 @@ library(tidyverse)
 library(terradactyl)
 
 # Optionally, read in SiteKey if it has already been generated and saved as a csv file
-SiteKey <- read.csv("C:\\Users\\aheller\\Documents\\Analysis\\ESDKeysWorking\\SiteKeyOutput_MLRA035X.csv")
+sitekey <- read.csv("C:\\Users\\aheller\\Documents\\Analysis\\ESDKeysWorking\\SiteKeyOutput_MLRA035X.csv")
 
 # MLRA of interest
 mlra <- "035X"
@@ -41,12 +41,7 @@ two <- c("Slope", "PSC", "SoilDepth")
 three <- c("SurfaceGravel", "SurfaceLGFrags", "SubsurfGravel", "SubsurfLGFrags", "SurfaceTextures")
 
 
-
-# Are you reading plots from a geodatabase or from the Landscape Data Commons?
-# Source = "LDC" for Landscape Data Commons
-# Source = "GDB" for geodatabase
-source = "GDB"
-# If source = "GDB", point to geodatabse
+# Point to geodatabse
 source.dsn <-"C:\\Users\\aheller\\Documents\\Raw Data\\AIMTerrestrialEdtBackup9-1-22.gdb"
 
 

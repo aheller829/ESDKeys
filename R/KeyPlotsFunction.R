@@ -1,10 +1,11 @@
 
-KeyPlots <- function(source.dsn, mlra, keypolyset, keystateset, weights) {
+KeyPlots <- function(source.dsn, sitekey, keypolyset, shapefile,
+                     keystateset, weights) {
 
   if(isTRUE(keypolyset) & isTRUE(keystateset)) stop("Select a single plot subset method, set other to FALSE")
 
 # Add option for, if site key hasn't been read in from csv, build site key
-
+  options(timeout = 4000000)
   # Read in plot info
   plots <- sf::st_read(dsn = source.dsn, layer = "tblPlots")
 
@@ -328,11 +329,9 @@ KeyPlots <- function(source.dsn, mlra, keypolyset, keystateset, weights) {
                   Eval_Lower, Eval_Upper, benchmark_vector)
 
   # Write outputs to csvs
-  write.csv(CriteriaSummary, paste(Sys.Date(), "SiteKeyCriteriaSummary_MLRA", mlra, ".csv", sep = ""), row.names = FALSE)
+  write.csv(Summary_Rank_Top_Slice, paste(Sys.Date(), "PlotsKeyed_MLRA", mlra, ".csv", sep = ""), row.names = FALSE)
 
-  write.csv(SiteKey, paste(Sys.Date(), "SiteKeyOutput_MLRA", mlra, ".csv", sep = ""), row.names = FALSE)
-
-  return(Summary_Rank_Top_Slice)
+  return(CriteriaSummary)
 }
 
 

@@ -8,3 +8,10 @@ Description: ESDKeys pulls from the EDIT database to generate ecological site ke
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
+Imports: 
+    dplyr,
+    jsonlite,
+    sf,
+    stringr,
+    terradactyl,
+    tidyr

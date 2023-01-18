@@ -18,7 +18,7 @@ KeyBuild(
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{mlra}{Character string. The desired Major Land Resource Area (MLRA) to use for gathering ecological sites. Use the MLRA symbol convention of "0MLRAX", as in "036X".
+  \item{mlra}{Character string. The desired Major Land Resource Area (MLRA) to use for gathering ecological sites. Use the MLRA symbol convention of "0MLRAX".
 %%     ~~Describe \code{x} here~~
 }
  \item{stateset}{True/False. If FALSE, ecological sites from the whole MLRA of interest are gathered and will span multiple states if the MLRA spans multiple states. If TRUE, ecological sites will be constrained by state within MLRA.

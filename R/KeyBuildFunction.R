@@ -1,6 +1,8 @@
 
 SiteKeyBuild <- function(mlra, stateset, state) {
 
+  options(timeout = 4000000)
+
   # Build the base web services URL needed to retrieve the ecological site list
   classlist <- jsonlite::fromJSON(paste0("https://edit.jornada.nmsu.edu/services/downloads/esd/", mlra, "/class-list.json"))
 
