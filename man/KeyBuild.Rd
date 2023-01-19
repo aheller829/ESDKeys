@@ -18,7 +18,7 @@ SiteKeyBuild(
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{mlra}{Character string. The desired Major Land Resource Area (MLRA) to use for gathering ecological sites. Use the MLRA symbol convention of "0MLRAX".
+  \item{mlra}{Character string. The desired Major Land Resource Area (MLRA) to use for gathering ecological sites. Use the standard MLRA symbol convention, as is used in the EDIT database.
 %%     ~~Describe \code{x} here~~
 }
  \item{stateset}{True/False. If FALSE, ecological sites from the whole MLRA of interest are gathered and will span multiple states if the MLRA spans multiple states. If TRUE, ecological sites will be constrained by state within MLRA.
@@ -57,6 +57,12 @@ SiteKeyBuild(
 mlra = "036X",
 stateset = TRUE,
 state = "NM"
+)
+
+SiteKeyBuild(
+mlra = "042B",
+stateset = FALSE,
+state = NULL
 )
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

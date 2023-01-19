@@ -23,7 +23,7 @@ KeyPlots(
 \arguments{
   \item{source.dsn}{Character string. The filepath and filename to a TerrADat geodatabase.
 }
-  \item{mlra}{Character string. Specifies the MLRA of the site key used. Use the MLRA symbol convention of "0MLRAX".
+  \item{mlra}{Character string. Specifies the MLRA of the site key used. Use the standard MLRA symbol convention, as is used in the EDIT database.
 }
   \item{sitekey}{Character string. The name of the ecological site key in the environment created by KeyBuild(). If SiteKeyBuild() has just been named, this will be SiteKey.
 }
