@@ -252,7 +252,7 @@ SiteKeyBuild <- function(mlra, stateset, state) {
         if(nrow(depthlist) == 0) {
           next
         } else {
-          depthlist <- dplyr::mutate_all(depthlist, na_if, "")
+          # depthlist <- dplyr::mutate_all(depthlist, na_if, "")
           depthlist$PropertyLow <- "SoilDepthLow"
           depthlist$PropertyHigh <- "SoilDepthHigh"
           depthlist <- depthlist[, c(7,3,8,4)]

@@ -72,11 +72,13 @@ KeyPlots <- function(source.dsn, mlra, sitekey, keypolyset, shapefile,
   # Surface gravels and larger fragments
   plotsurffrags <- soilmod %>%
     dplyr::filter(HorizonNumber == 1) %>%
-    dplyr::select(PrimaryKey, FragVolGravel, FragVolCobble, FragVolStone) %>%
+    dplyr::select(PrimaryKey, FragVolGravel, FragVolCobble, FragVolStone, RockFragments) %>%
     dplyr::mutate(FragVolCobble = ifelse(!is.na(FragVolGravel) & is.na(FragVolCobble), 0, FragVolCobble)) %>% # This converts NA to 0 IF there is another measurement present, implying that it wasn't just forgotten/excluded
     dplyr::mutate(fragvolStone = ifelse(!is.na(FragVolGravel) & is.na(FragVolStone), 0, FragVolCobble)) %>% # Same as above, for stone
-    dplyr::mutate(SurfaceLGFrags = FragVolCobble + FragVolStone) %>%
-    dplyr::select(PrimaryKey, SurfaceGravel = FragVolGravel, SurfaceLGFrags)
+    dplyr::mutate(SurfaceLGFrags = (FragVolCobble*RockFragments) + (FragVolStone*RockFragments)) %>%
+    dplyr::mutate(SurfaceGravel = (FragVolGravel*RockFragments)) %>%
+    dplyr::select(PrimaryKey, SurfaceGravel, SurfaceLGFrags)
+
   # Replace NA with 0
   plotsurffrags <- dplyr::mutate_if(plotsurffrags, is.numeric, ~replace(., is.na(.), 0))
   # Subsurface fragments
