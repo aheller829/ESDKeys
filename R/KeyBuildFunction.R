@@ -58,47 +58,47 @@ SiteKeyBuild <- function(mlra, stateset, state) {
       modifiers <- modifiers %>%
         dplyr::mutate_all(na_if, "") %>%
         dplyr::mutate_all(.funs = tolower) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "gravelly", "GR"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "cobbly", "CB"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "stony", "ST"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "bouldery", "BY"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "channery", "CN"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "flaggy", "FL"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "cobbly", "CB"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "very", "V"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "extremely", "X"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "fine", ""))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "medium", ""))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., " ", "")))
+        dplyr::mutate_all(list(~stringr::str_replace(., "gravelly", "GR"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "cobbly", "CB"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "stony", "ST"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "bouldery", "BY"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "channery", "CN"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "flaggy", "FL"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "cobbly", "CB"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "very", "V"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "extremely", "X"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "fine", ""))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "medium", ""))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., " ", "")))
       textures <- dplyr::select(surfacetextlist, starts_with("text"))
       textures <- data.frame(lapply(textures, as.character), stringsAsFactors = FALSE)
       textures <- textures %>%
         dplyr::mutate_all(na_if, "") %>%
         dplyr::mutate_all(.funs = tolower) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "coarse sand", "COS"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "very fine sandy loam", "VFSL"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "fine sandy loam", "FSL"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "sandy loam", "SL"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "fine sand", "FS"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "very fine sand", "VFS"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "loamy coarse sand", "LCOS"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "loamy sand", "LS"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "loamy fine sand", "LFS"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "loamy very fine sand", "LVFS"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "coarse sandy loam", "COSL"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "loamy", "L"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "silt loam", "SIL"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "sandy clay loam", "SCL"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "silty clay loam", "SICL"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "clay loam", "CL"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "sandy clay", "SC"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "sandy clay", "SC"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "silty clay", "SIC"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "clay", "C"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "sand", "S"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "loam", "L"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., "silt", "SI"))) %>%
-        dplyr::mutate_all(funs(stringr::str_replace(., " ", "")))
+        dplyr::mutate_all(list(~stringr::str_replace(., "coarse sand", "COS"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "very fine sandy loam", "VFSL"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "fine sandy loam", "FSL"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "sandy loam", "SL"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "fine sand", "FS"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "very fine sand", "VFS"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "loamy coarse sand", "LCOS"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "loamy sand", "LS"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "loamy fine sand", "LFS"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "loamy very fine sand", "LVFS"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "coarse sandy loam", "COSL"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "loamy", "L"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "silt loam", "SIL"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "sandy clay loam", "SCL"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "silty clay loam", "SICL"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "clay loam", "CL"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "sandy clay", "SC"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "sandy clay", "SC"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "silty clay", "SIC"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "clay", "C"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "sand", "S"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "loam", "L"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., "silt", "SI"))) %>%
+        dplyr::mutate_all(list(~stringr::str_replace(., " ", "")))
       surfacetextlist <- cbind(textures, modifiers)
       surfacetextlist <- dplyr::mutate(surfacetextlist, comb1 = ifelse(!is.na(modifier1), paste(modifier1, texture), texture))
       surfacetextlist <- dplyr::mutate(surfacetextlist, comb2 = ifelse(!is.na(modifier2), paste(modifier2, texture), texture))
