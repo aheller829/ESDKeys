@@ -15,6 +15,7 @@ Imports:
     sf,
     stringr,
     terradactyl,
-    tidyr
+    tidyr,
+    stringr
 Depends: 
-    tidyverse
+    
