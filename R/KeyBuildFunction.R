@@ -145,10 +145,16 @@ SiteKeyBuild <- function(mlra, stateset, state) {
     dplyr::ungroup()
 
   spcomp <- tidyr::spread(spcomp, ID, Plant.symbol, fill = NA)
+  if(nrow(spcomp) > 0) {
   spcomp <- tidyr::unite(spcomp, String, 2:ncol(spcomp), sep = ",", remove = TRUE, na.rm = TRUE)
   spcomp$Property <- "Species"
   spcomp <- dplyr::select(spcomp, String, Property, siteid)
-
+  } else {
+    spcomp$String <- NA
+    spcomp$Property <- NA
+    spcomp$siteid <- NA
+    spcomp <- dplyr::select(spcomp, String, Property, siteid)
+  }
 
 
 
