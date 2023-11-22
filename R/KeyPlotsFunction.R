@@ -1,6 +1,6 @@
 
 KeyPlots <- function(source.dsn, mlra, sitekey, keypolyset, shapefile,
-                     keystateset, keystate, weights) {
+                     keystateset, keystate, weights, criteriadetail) {
 
   if(isTRUE(keypolyset) & isTRUE(keystateset)) stop("Select a single plot subset method, set other to FALSE")
 
@@ -72,47 +72,27 @@ KeyPlots <- function(source.dsn, mlra, sitekey, keypolyset, shapefile,
   # Surface gravels and larger fragments
   plotsurffrags <- soilmod %>%
     dplyr::filter(HorizonNumber == 1) %>%
-    dplyr::select(PrimaryKey, FragVolGravel, FragVolCobble, FragVolStone, RockFragments) %>%
-    dplyr::mutate(FragVolCobble = ifelse(!is.na(FragVolGravel) & is.na(FragVolCobble), 0, FragVolCobble)) %>% # This converts NA to 0 IF there is another measurement present, implying that it wasn't just forgotten/excluded
-    dplyr::mutate(fragvolStone = ifelse(!is.na(FragVolGravel) & is.na(FragVolStone), 0, FragVolCobble)) %>% # Same as above, for stone
-    dplyr::mutate(SurfaceLGFrags = (FragVolCobble*RockFragments) + (FragVolStone*RockFragments)) %>%
-    dplyr::mutate(SurfaceGravel = (FragVolGravel*RockFragments)) %>%
-    dplyr::select(PrimaryKey, SurfaceGravel, SurfaceLGFrags)
+    dplyr::select(PrimaryKey, SurfaceFrags = RockFragments)
 
-  # Replace NA with 0
-  plotsurffrags <- dplyr::mutate_if(plotsurffrags, is.numeric, ~replace(., is.na(.), 0))
   # Subsurface fragments
   plotssfrags <- soilmod %>%
     dplyr::filter(HorizonNumber > 1) %>% # Plots will drop if there's only one HZ present
-    dplyr::select(PrimaryKey, HorizonNumber, HorizonDepthUpper, HorizonDepthLower, FragVolGravel, FragVolCobble, FragVolStone) %>%
-    dplyr::mutate(FragVolCobble = ifelse(!is.na(FragVolGravel) & is.na(FragVolCobble), 0, FragVolCobble)) %>% # This converts NA to 0 IF there is another measurement present, implying that it wasn't just forgotten/excluded
-    dplyr::mutate(FragVolStone = ifelse(!is.na(FragVolGravel) & is.na(FragVolStone), 0, FragVolCobble)) %>% # Same as above, for stone
-    dplyr::mutate(fragvolLg = FragVolCobble + FragVolStone)
+    dplyr::select(PrimaryKey, HorizonNumber, HorizonDepthUpper, HorizonDepthLower, RockFragments)
+
   # Convert to ss weighted fragments
   plotssfrags$hzdepb_in <- plotssfrags$HorizonDepthLower/2.54
   plotssfrags$hzdept_in <- plotssfrags$HorizonDepthUpper/2.54
-  # First gravel
-  plotssgr <- plotssfrags %>%
+  # All fragments
+  plotssfr <- plotssfrags %>%
     dplyr::left_join(depth) %>%
     dplyr::mutate(HZthickness = hzdepb_in - hzdept_in) %>%
-    dplyr::mutate(ssgrmult = FragVolGravel * HZthickness) %>%
+    dplyr::mutate(ssfragmult = RockFragments * HZthickness) %>%
     dplyr::group_by(PrimaryKey) %>%
-    dplyr::mutate(SubsurfGravel = sum(ssgrmult)/SoilDepth) %>%
-    dplyr::select(PrimaryKey, SubsurfGravel)
-  plotssgr <- dplyr::distinct(plotssgr)
-  plotssgr[2] <- round(plotssgr[2], 0)
-  plotssgr <- dplyr::mutate_if(plotssgr, is.numeric, ~replace(., is.na(.), 0))
-  # Now larger fragments
-  plotsslg <- plotssfrags %>%
-    dplyr::left_join(depth) %>%
-    dplyr::mutate(HZthickness = hzdepb_in - hzdept_in) %>%
-    dplyr::mutate(sslgmult = fragvolLg * HZthickness) %>%
-    dplyr::group_by(PrimaryKey) %>%
-    dplyr::mutate(SubsurfLGFrags = sum(sslgmult)/SoilDepth) %>%
-    dplyr::select(PrimaryKey, SubsurfLGFrags)
-  plotsslg <- dplyr::distinct(plotsslg)
-  plotsslg[2] <- round(plotsslg[2], 0)
-  plotsslg <- dplyr::mutate_if(plotsslg, is.numeric, ~replace(., is.na(.), 0))
+    dplyr::mutate(SubsurfFrags = sum(ssfragmult)/SoilDepth) %>%
+    dplyr::select(PrimaryKey, SubsurfFrags)
+  plotssfr <- dplyr::distinct(plotssfr)
+  plotssfr[2] <- round(plotssfr[2], 0)
+  plotssfr <- dplyr::mutate_if(plotssfr, is.numeric, ~replace(., is.na(.), 0))
   # Calculate simplified PSCs
   # First QC ClayPct and replace incorrect ClayPct with ClayEst (midpoint of texture triangle space)
   particlepct <- soilmod %>%
@@ -190,18 +170,22 @@ KeyPlots <- function(source.dsn, mlra, sitekey, keypolyset, shapefile,
    # Keep desired variables
    psc.esds <- dplyr::select(psc.esds, PrimaryKey, PSC = PSC.ESD)
 
+   # Read in species data
+
+
+
+
   # Format quantitative plot data
   quantplots <- dplyr::select(modplots, PrimaryKey, AvgPrecip, Elevation)
   quantplots <- quantplots %>%
     dplyr::left_join(depth) %>%
-    dplyr::left_join(plotsurffrags) %>%
-    dplyr::left_join(plotssgr) %>%
-    dplyr::left_join(plotsslg)
+    dplyr::left_join(plotssfr) %>%
+    dplyr::left_join(plotsurffrags)
 
   # Format nominal plot data
   nomplots <- dplyr::left_join(psc.esds, plotsurftext)
   # Gather
-  quantplots <- tidyr::gather(quantplots, key = "Property", value = "PlotValue", 2:8)
+  quantplots <- tidyr::gather(quantplots, key = "Property", value = "PlotValue", 2:6)
   nomplots <- tidyr::gather(nomplots, key = "Property", value = "PlotValue", 2:3)
   # Filter out NAs
   quantplotsclean <- na.omit(quantplots)
@@ -209,9 +193,57 @@ KeyPlots <- function(source.dsn, mlra, sitekey, keypolyset, shapefile,
   # Plot value should be character type to accomodate quantitative and nominal attributes
   quantplotsclean$PlotValue <- as.character(quantplotsclean$PlotValue)
 
+  # Sum sitekey fragments by size classes into total rock fragments by surface and subsurface
+  # Because not all AIM projects differentiate fragment size classes
+  # Surface fragments
+  surfacefrags <- dplyr::filter(sitekey, Property == "SurfaceGravel" | Property == "SurfaceLGFrags")
+  surfacefrags$representativeLow <- as.numeric(surfacefrags$representativeLow)
+  surfacefrags$representativeHigh <- as.numeric(surfacefrags$representativeHigh)
+  surfacefragslow <- surfacefrags %>%
+    dplyr::group_by(siteid) %>%
+    dplyr::select(siteid, representativeLow) %>%
+    dplyr::summarise(representativeLow = sum(representativeLow))
+  surfacefragshigh <- surfacefrags %>%
+    dplyr::group_by(siteid) %>%
+    dplyr::summarise(representativeHigh = sum(representativeHigh))
+  surfacefrags <- dplyr::left_join(surfacefragslow, surfacefragshigh)
+  surfacefrags$PropertyLow <- "SurfaceFragsLow"
+  surfacefrags$Lower.Relation <- ">="
+  surfacefrags$PropertyHigh <- "SurfaceFragsHigh"
+  surfacefrags$Upper.Relation <- "<="
+  surfacefrags$Property <- "SurfaceFrags"
+  surfacefrags <- dplyr::select(surfacefrags, siteid, PropertyLow, Lower.Relation, representativeLow,
+                                PropertyHigh, Upper.Relation, representativeHigh, Property)
+  # Subsurfacefragments
+  subsurfacefrags <- dplyr::filter(sitekey, Property == "SubsurfGR" | Property == "SubsurfLGFrags")
+  subsurfacefrags$representativeLow <- as.numeric(subsurfacefrags$representativeLow)
+  subsurfacefrags$representativeHigh <- as.numeric(subsurfacefrags$representativeHigh)
+  subsurfacefragslow <- subsurfacefrags %>%
+    dplyr::group_by(siteid) %>%
+    dplyr::select(siteid, representativeLow) %>%
+    dplyr::summarise(representativeLow = sum(representativeLow))
+  subsurfacefragshigh <- subsurfacefrags %>%
+    dplyr::group_by(siteid) %>%
+    dplyr::summarise(representativeHigh = sum(representativeHigh))
+  subsurfacefrags <- dplyr::left_join(subsurfacefragslow, subsurfacefragshigh)
+  subsurfacefrags$PropertyLow <- "SubsurfFragsLow"
+  subsurfacefrags$Lower.Relation <- ">="
+  subsurfacefrags$PropertyHigh <- "SubsurfFragsHigh"
+  subsurfacefrags$Upper.Relation <- "<="
+  subsurfacefrags$Property <- "SubsurfFrags"
+  subsurfacefrags <- dplyr::select(subsurfacefrags, siteid, PropertyLow, Lower.Relation, representativeLow,
+                                PropertyHigh, Upper.Relation, representativeHigh, Property)
+  # Join surface and subsurface fragment sitekey tables
+  frags <- rbind(surfacefrags, subsurfacefrags)
+  # Remove fragments by size classes from key and summed rock fragments
+  sitekey <- dplyr::filter(sitekey, Property != "SubsurfGravel" & Property!= "SubsurfLGFrags" &
+                             Property != "SurfaceGravel" & Property != "SurfaceLGFrags")
+  sitekey <- rbind(sitekey, frags)
+
+
   # Run quantkeying
-  QSiteKey <- dplyr::filter(SiteKey, Property != "SurfaceTextures" & Property != "PSC")
-  quantjoined <- dplyr::full_join(quantplotsclean, SiteKey) # Many NAs form during this step
+  QSiteKey <- dplyr::filter(sitekey, Property != "SurfaceTextures" & Property != "PSC")
+  quantjoined <- dplyr::full_join(quantplotsclean, QSiteKey) # Many NAs form during this step
   # Not sure why...the quantplotsclean columns are occupied, but they don't join with the key table
   # Pull unique values from Key (the upper and lower limits that define key logic)
   uppervals <- unique(quantjoined$representativeLow)
@@ -288,6 +320,11 @@ KeyPlots <- function(source.dsn, mlra, sitekey, keypolyset, shapefile,
 
   # Filter for mismatches between Property and PropertyLow
   results <- dplyr::filter(results, Property == PropertyLow)
+  results <- results %>%
+    tidyr::unite(Eval_Lower, PlotValue, Lower.Relation, representativeLow, sep = "", remove = FALSE) %>%
+    dplyr::select(PrimaryKey, Property, PlotValue, siteid, PropertyLow, Lower.Relation,
+                  representativeLow, PropertyHigh, Upper.Relation, representativeHigh,
+                  Eval_Lower, Eval_Upper, benchmark_vector)
 
   # Join results of quantitative and nominal keys
   Key_Conditional_Paste <- rbind(QKey_Conditional_Paste, results)
@@ -331,9 +368,23 @@ KeyPlots <- function(source.dsn, mlra, sitekey, keypolyset, shapefile,
                   Eval_Lower, Eval_Upper, benchmark_vector)
 
   # Write outputs to csvs
-  write.csv(Summary_Rank_Top_Slice, paste(Sys.Date(), "PlotsKeyed_MLRA", mlra, ".csv", sep = ""), row.names = FALSE)
+  if(isTRUE(criteriadetail)) {
+    write.csv(CriteriaSummary, paste(Sys.Date(), "PlotsKeyed_CriteriaDetail_MLRA", mlra, ".csv", sep = ""), row.names = FALSE)
+  } else {
+    if(isFALSE(criteriadetail)) {
+    write.csv(Summary_Rank_Top_Slice, paste(Sys.Date(), "PlotsKeyed_MLRA", mlra, ".csv", sep = ""), row.names = FALSE)
+    }
+  }
 
-  return(CriteriaSummary)
+
+  if(isTRUE(criteriadetail)) {
+    return(CriteriaSummary)
+  } else {
+    if(isFALSE(criteriadetail)) {
+      return(Summary_Rank_Top_Slice)
+    }
+  }
+
 }
 
 
