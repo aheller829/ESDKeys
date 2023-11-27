@@ -1,6 +1,6 @@
 
 KeyPlots <- function(source.dsn, mlra, sitekey, keypolyset, shapefile,
-                     keystateset, keystate, weights, criteriadetail) {
+                     keystateset, keystate, weights, species, lpi.tall) {
 
   if(isTRUE(keypolyset) & isTRUE(keystateset)) stop("Select a single plot subset method, set other to FALSE")
 
@@ -170,9 +170,26 @@ KeyPlots <- function(source.dsn, mlra, sitekey, keypolyset, shapefile,
    # Keep desired variables
    psc.esds <- dplyr::select(psc.esds, PrimaryKey, PSC = PSC.ESD)
 
-   # Read in species data
-
-
+   # Read in species data from tall table
+   if(isTRUE(species)) {
+   lpi.tall <- subset(lpi.tall, lpi.tall$PrimaryKey %in% modplots$PrimaryKey)
+   lpi.species <- terradactyl::pct_cover_species(lpi_tall = lpi.tall, tall = TRUE, by_line = FALSE, hit = "any")
+   lpi.species <- dplyr::filter(lpi.species, percent > 0)
+   lpi.species.slice <- lpi.species %>%
+     dplyr::group_by(PrimaryKey) %>%
+     dplyr::arrange(desc(percent)) %>%
+     dplyr::slice(1:5) %>%
+     dplyr::mutate(id = row_number()) %>%
+     dplyr::ungroup()
+   rm(lpi.tall)
+   lpi.wide <- lpi.species.slice %>%
+     dplyr::select(1, 2, 4) %>%
+     tidyr::spread(key = id, value = Species)
+   rm(lpi.species.slice)
+   lpi.wide <- tidyr::unite(lpi.wide, col = "Species", 2:6, sep = ",")
+   lpi.wide$Property <- "Species"
+   lpi.wide <- dplyr::select(lpi.wide, PrimaryKey, Property, PlotValue = Species)
+   } else {print("Species set to FALSE")}
 
 
   # Format quantitative plot data
@@ -184,9 +201,11 @@ KeyPlots <- function(source.dsn, mlra, sitekey, keypolyset, shapefile,
 
   # Format nominal plot data
   nomplots <- dplyr::left_join(psc.esds, plotsurftext)
+
   # Gather
   quantplots <- tidyr::gather(quantplots, key = "Property", value = "PlotValue", 2:6)
   nomplots <- tidyr::gather(nomplots, key = "Property", value = "PlotValue", 2:3)
+
   # Filter out NAs
   quantplotsclean <- na.omit(quantplots)
   nomplotsclean <- na.omit(nomplots)
@@ -318,6 +337,7 @@ KeyPlots <- function(source.dsn, mlra, sitekey, keypolyset, shapefile,
   results <- do.call(rbind,
                         match_list)
 
+
   # Filter for mismatches between Property and PropertyLow
   results <- dplyr::filter(results, Property == PropertyLow)
   results <- results %>%
@@ -326,8 +346,71 @@ KeyPlots <- function(source.dsn, mlra, sitekey, keypolyset, shapefile,
                   representativeLow, PropertyHigh, Upper.Relation, representativeHigh,
                   Eval_Lower, Eval_Upper, benchmark_vector)
 
+
+  # Match species
+  if(isTRUE(species)) {
+  speciesmatch <- SiteKey %>%
+    dplyr::select(siteid:representativeLow, Property) %>%
+    dplyr::filter(Property == "Species")
+  spmatch_list <- apply(X = lpi.wide,
+                      strings = speciesmatch,
+                      MARGIN = 1,
+                      FUN = function(X, strings){
+                        current_row <- X
+                        current_string1 <- current_row[["PlotValue"]]
+
+                        st_matches <- sapply(X = strings$representativeLow,
+                                             current_string1 = current_string1,
+
+                                             FUN = function(X, current_string1) {
+
+                                               current_string1 <- trimws(unlist(stringr::str_split(current_string1, pattern = ",")))
+                                               stringies <- trimws(unlist(stringr::str_split(X, pattern = ",")))
+
+                                               any(current_string1 %in% stringies)
+                                             })
+                        data.frame(PrimaryKey = current_row[["PrimaryKey"]],
+                                   Property = current_row[["Property"]],
+                                   PlotValue = current_row[["PlotValue"]],
+                                   siteid = strings$siteid,
+                                   PropertyLow = strings$PropertyLow,
+                                   Lower.Relation = strings$Lower.Relation,
+                                   representativeLow = strings$representativeLow,
+                                   PropertyHigh = NA,
+                                   Upper.Relation = NA,
+                                   representativeHigh = NA,
+                                   Eval_Lower = NA,
+                                   Eval_Upper = NA,
+                                   benchmark_vector = st_matches,
+                                   stringsAsFactors = FALSE)
+                      })
+
+
+  spresults <- do.call(rbind,
+                     spmatch_list)
+  rownames(spresults) <- NULL
+
+  # Filter for mismatches between Property and PropertyLow
+  spresults <- dplyr::filter(spresults, Property == PropertyLow)
+  spresults <- spresults %>%
+    tidyr::unite(Eval_Lower, PlotValue, Lower.Relation, representativeLow, sep = "", remove = FALSE) %>%
+    dplyr::select(PrimaryKey, Property, PlotValue, siteid, PropertyLow, Lower.Relation,
+                  representativeLow, PropertyHigh, Upper.Relation, representativeHigh,
+                  Eval_Lower, Eval_Upper, benchmark_vector)
+  }
+
+
+
+
   # Join results of quantitative and nominal keys
+  if(isTRUE(species)) {
   Key_Conditional_Paste <- rbind(QKey_Conditional_Paste, results)
+  Key_Conditional_Paste <- rbind(Key_Conditional_Paste, spresults)
+  } else {
+    if(isFALSE(species)) {
+      Key_Conditional_Paste <- rbind(QKey_Conditional_Paste, results)
+    }
+  }
 
   # Add variable weights
   # Convert T/F to integers
@@ -368,22 +451,10 @@ KeyPlots <- function(source.dsn, mlra, sitekey, keypolyset, shapefile,
                   Eval_Lower, Eval_Upper, benchmark_vector)
 
   # Write outputs to csvs
-  if(isTRUE(criteriadetail)) {
-    write.csv(CriteriaSummary, paste(Sys.Date(), "PlotsKeyed_CriteriaDetail_MLRA", mlra, ".csv", sep = ""), row.names = FALSE)
-  } else {
-    if(isFALSE(criteriadetail)) {
     write.csv(Summary_Rank_Top_Slice, paste(Sys.Date(), "PlotsKeyed_MLRA", mlra, ".csv", sep = ""), row.names = FALSE)
-    }
-  }
 
 
-  if(isTRUE(criteriadetail)) {
     return(CriteriaSummary)
-  } else {
-    if(isFALSE(criteriadetail)) {
-      return(Summary_Rank_Top_Slice)
-    }
-  }
 
 }
 
